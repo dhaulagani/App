@@ -734,7 +734,7 @@ function getMerchantOrDescription(transaction: OnyxEntry<Transaction>) {
 function getMerchantName(transaction: TransactionWithOptionalSearchFields, translate: (key: TranslationPaths) => string): string {
     const shouldShowMerchant = transaction.shouldShowMerchant ?? true;
 
-    let merchant = transaction?.formattedMerchant ?? getMerchant(transaction);
+    let merchant = transaction?.modifiedMerchant ? transaction.modifiedMerchant : (transaction?.formattedMerchant ?? getMerchant(transaction));
 
     if (isScanning(transaction) && shouldShowMerchant) {
         merchant = translate('iou.receiptStatusTitle');

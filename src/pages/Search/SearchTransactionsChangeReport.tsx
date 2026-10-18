@@ -19,6 +19,8 @@ import usePolicyForMovingExpenses from '@hooks/usePolicyForMovingExpenses';
 import useResponsiveLayout from '@hooks/useResponsiveLayout';
 
 import {createNewReport} from '@libs/actions/Report';
+import {getTransactionFromTransactionListItem} from '@libs/SearchUIUtils';
+import type {TransactionListItemType} from '@components/SelectionList/types';
 import {autoReportTransactions, changeTransactionsReport} from '@libs/actions/Transaction';
 import {canResolveTransactionCard} from '@libs/CardUtils';
 import getAllMatchingQueryParams from '@libs/getAllMatchingQueryParams';
@@ -74,7 +76,7 @@ function SearchTransactionsChangeReport() {
 
     // Search-selected transactions are not in COLLECTION.TRANSACTION — extract from `selectedTransactions` directly.
     const transactions = Object.values(selectedTransactions)
-        .map((transactionItem) => transactionItem.transaction)
+        .map((transactionItem) => (transactionItem.transaction ? getTransactionFromTransactionListItem(transactionItem.transaction as unknown as TransactionListItemType) : undefined))
         .filter((transaction): transaction is Transaction => !!transaction);
     const [allReports] = useOnyx(ONYXKEYS.COLLECTION.REPORT);
     const [allPolicies] = useOnyx(ONYXKEYS.COLLECTION.POLICY);
