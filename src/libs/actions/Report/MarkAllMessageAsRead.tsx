@@ -50,6 +50,7 @@ function markAllMessagesAsRead(
 
     type PartialReport = {
         lastReadTime: Report['lastReadTime'] | null;
+        manuallyMarkedUnreadReportActionID: Report['manuallyMarkedUnreadReportActionID'] | null;
     };
     const optimisticReports: Record<string, PartialReport> = {};
     const failureReports: Record<string, PartialReport> = {};
@@ -69,9 +70,28 @@ function markAllMessagesAsRead(
         }
 
         const reportKey = `${ONYXKEYS.COLLECTION.REPORT}${report.reportID}`;
-        optimisticReports[reportKey] = {lastReadTime: newLastReadTime};
-        failureReports[reportKey] = {lastReadTime: report.lastReadTime ?? null};
+        optimisticReports[reportKey] = {
+            lastReadTime: newLastReadTime,
+            manuallyMarkedUnreadReportActionID: null,
+        };
+        failureReports[reportKey] = {
+            lastReadTime: report.lastReadTime ?? null,
+            manuallyMarkedUnreadReportActionID: report.manuallyMarkedUnreadReportActionID ?? null,
+        };
         reportIDList.push(report.reportID);
+
+        if (oneTransactionThreadReport?.reportID) {
+            const threadKey = `${ONYXKEYS.COLLECTION.REPORT}${oneTransactionThreadReport.reportID}`;
+            optimisticReports[threadKey] = {
+                lastReadTime: newLastReadTime,
+                manuallyMarkedUnreadReportActionID: null,
+            };
+            failureReports[threadKey] = {
+                lastReadTime: oneTransactionThreadReport.lastReadTime ?? null,
+                manuallyMarkedUnreadReportActionID: oneTransactionThreadReport.manuallyMarkedUnreadReportActionID ?? null,
+            };
+            reportIDList.push(oneTransactionThreadReport.reportID);
+        }
     }
 
     if (reportIDList.length === 0) {
@@ -94,12 +114,20 @@ function markAllMessagesAsRead(
         },
     ];
 
+    const successData = [
+        {
+            onyxMethod: Onyx.METHOD.MERGE_COLLECTION,
+            key: ONYXKEYS.COLLECTION.REPORT,
+            value: optimisticReports,
+        },
+    ];
+
     const parameters: MarkAllMessagesAsReadParams = {
         reportIDList,
         lastReadTime: newLastReadTime,
     };
 
-    API.write(WRITE_COMMANDS.MARK_ALL_MESSAGES_AS_READ, parameters, {optimisticData, failureData});
+    API.write(WRITE_COMMANDS.MARK_ALL_MESSAGES_AS_READ, parameters, {optimisticData, successData, failureData});
 }
 
 export default markAllMessagesAsRead;

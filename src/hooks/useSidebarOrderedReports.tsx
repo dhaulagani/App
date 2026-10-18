@@ -46,6 +46,7 @@ type SidebarOrderedReportsActionsContextValue = {
     clearLHNCache: () => void;
     setActiveTab: (tab: ValueOf<typeof CONST.INBOX_TAB>) => void;
     setStickyReportID: (reportID: string) => void;
+    clearStickyReport: () => void;
     /** The report IDs listed under the given Inbox tab, read on demand by bulk tab actions (e.g. "Mark all as read"). */
     getReportIDsForTab: (tab: ValueOf<typeof CONST.INBOX_TAB>) => string[];
 };
@@ -79,6 +80,7 @@ const SidebarOrderedReportsActionsContext = createContext<SidebarOrderedReportsA
     clearLHNCache: () => {},
     setActiveTab: () => {},
     setStickyReportID: () => {},
+    clearStickyReport: () => {},
     getReportIDsForTab: () => [],
 });
 
@@ -470,9 +472,13 @@ function SidebarOrderedReportsContextProvider({
         reportsToDisplayInLHN,
     ]);
 
+    const clearStickyReport = useCallback(() => {
+        setStickyReport(undefined);
+    }, []);
+
     const actionsValue: SidebarOrderedReportsActionsContextValue = useMemo(
-        () => ({clearLHNCache, setActiveTab, setStickyReportID, getReportIDsForTab}),
-        [clearLHNCache, setActiveTab, setStickyReportID, getReportIDsForTab],
+        () => ({clearLHNCache, setActiveTab, setStickyReportID, clearStickyReport, getReportIDsForTab}),
+        [clearLHNCache, setActiveTab, setStickyReportID, clearStickyReport, getReportIDsForTab],
     );
 
     return (
